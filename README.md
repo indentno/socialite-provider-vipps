@@ -50,6 +50,8 @@ You will need to add an entry to the services configuration file so that after c
 ],
 ```
 
+Remember to whitelist the redirect_uri in the Vipps portal.
+
 ## 5. Usage
 
 * [Laravel docs on configuration](http://laravel.com/docs/master/configuration)
