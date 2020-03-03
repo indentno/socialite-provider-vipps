@@ -106,3 +106,6 @@ Example for a VippsAuthController:
 
 * When using Vipps login you need to use the login button svgs provided by Vipps.
 Go to [Vipps design guidelines](https://github.com/vippsas/vipps-design-guidelines) for more info.
+
+## License
+MIT © [Sempro AS](https://www.sempro.no)
