@@ -1,0 +1,1 @@
+# socialite-provider-vipps
