@@ -16,19 +16,25 @@ class Provider extends AbstractProvider
     /**
      * {@inheritdoc}
      */
-    protected $scopes = ['openid', 'phoneNumber'];
+    protected $scopes = [
+        'openid',
+        'api_version_2',
+        'phoneNumber',
+    ];
 
     /**
      * {@inheritdoc}
      */
     protected $scopeSeparator = ' ';
 
+    private $localUrlCache = null;
+
     /**
      * {@inheritdoc}
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://api.vipps.no/access-management-1.0/access/oauth2/auth', $state);
+        return $this->buildAuthUrlFromBase($this->resolveEndpointUrl('authorization_endpoint'), $state);
     }
 
     /**
@@ -36,7 +42,7 @@ class Provider extends AbstractProvider
      */
     protected function getTokenUrl()
     {
-        return 'https://api.vipps.no/access-management-1.0/access/oauth2/token';
+        return $this->resolveEndpointUrl('token_endpoint');
     }
 
     /**
@@ -44,7 +50,7 @@ class Provider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
-        $response = $this->getHttpClient()->get('https://api.vipps.no/access-management-1.0/access/userinfo', [
+        $response = $this->getHttpClient()->get($this->resolveEndpointUrl('userinfo_endpoint'), [
             'headers' => [
                 'Authorization' => 'Bearer '.$token,
             ],
@@ -91,5 +97,23 @@ class Provider extends AbstractProvider
         ]);
 
         return json_decode($response->getBody(), true);
+    }
+
+    private function resolveEndpointUrl($endpoint)
+    {
+        if (! $this->localUrlCache) {
+            $this->buildLocalUrlCache();
+        }
+
+        return $this->localUrlCache[$endpoint];
+    }
+
+    private function buildLocalUrlCache()
+    {
+        $response = $this->getHttpClient()->get(
+            'https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration'
+        );
+
+        $this->localUrlCache = json_decode($response->getBody(), true);
     }
 }
