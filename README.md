@@ -32,8 +32,8 @@ Example:
  */
 protected $listen = [
     \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-                '\SocialiteProviders\Vipps\VippsExtendSocialite@handle',
-            ],
+        '\SocialiteProviders\Vipps\VippsExtendSocialite@handle',
+    ],
 ];
 ```
 ## 4. Configuration setup

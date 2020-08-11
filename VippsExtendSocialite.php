@@ -11,6 +11,6 @@ class VippsExtendSocialite
      */
     public function handle(SocialiteWasCalled $socialiteWasCalled)
     {
-        $socialiteWasCalled->extendSocialite('vipps', __NAMESPACE__.'\Provider');
+        $socialiteWasCalled->extendSocialite('vipps', Provider::class);
     }
 }
