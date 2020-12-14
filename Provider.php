@@ -86,7 +86,7 @@ class Provider extends AbstractProvider
      */
     public function getAccessTokenResponse($code)
     {
-        $postKey = (version_compare(ClientInterface::MAJOR_VERSION, '6') === 1) ? 'form_params' : 'body';
+        $postKey = (version_compare($this->getGuzzleVersion(), '6') === 1) ? 'form_params' : 'body';
 
         $response = $this->getHttpClient()->post($this->getTokenUrl(), [
             'headers' => [
@@ -115,5 +115,14 @@ class Provider extends AbstractProvider
         );
 
         $this->localUrlCache = json_decode($response->getBody(), true);
+    }
+
+    private function getGuzzleVersion()
+    {
+        if (defined(ClientInterface::class . '::VERSION')) {
+            return ClientInterface::VERSION;
+        }
+
+        return ClientInterface::MAJOR_VERSION;
     }
 }
