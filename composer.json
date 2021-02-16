@@ -7,7 +7,6 @@
         "email": "christoffer.fredriksen@sempro.no"
     }],
     "require": {
-        "php": "^7.3",
         "ext-json": "*",
         "socialiteproviders/manager": "^4.0"
     },
