@@ -111,7 +111,8 @@ class Provider extends AbstractProvider
     private function buildLocalUrlCache()
     {
         $response = $this->getHttpClient()->get(
-            'https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration'
+            config('services.vipps.client_base_uri', 'https://api.vipps.no')
+            . '/access-management-1.0/access/.well-known/openid-configuration'
         );
 
         $this->localUrlCache = json_decode($response->getBody(), true);

@@ -46,6 +46,7 @@ You will need to add an entry to the services configuration file so that after c
 'vipps' => [
     'client_id' => env('VIPPS_CLIENT_ID'),
     'client_secret' => env('VIPPS_CLIENT_SECRET'),
+    'client_base_uri' => env('VIPPS_BASE_URI'),
     'redirect' => env('VIPPS_REDIRECT_URI'),
 ],
 ```
