@@ -18,8 +18,8 @@ class Provider extends AbstractProvider
      */
     protected $scopes = [
         'openid',
-        'api_version_2',
         'phoneNumber',
+        'api_version_2',
     ];
 
     /**
@@ -28,6 +28,24 @@ class Provider extends AbstractProvider
     protected $scopeSeparator = ' ';
 
     private $localUrlCache = null;
+
+    public static function additionalConfigKeys()
+    {
+        return ['base_url', 'additional_scopes'];
+    }
+
+    public function getScopes()
+    {
+        return array_merge(
+            parent::getScopes(),
+            $this->getConfig('additional_scopes', [])
+        );
+    }
+
+    protected function baseUrl()
+    {
+        return $this->getConfig('base_url', 'api.vipps.no');
+    }
 
     /**
      * {@inheritdoc}
@@ -110,8 +128,10 @@ class Provider extends AbstractProvider
 
     private function buildLocalUrlCache()
     {
+        $baseUrl = $this->baseUrl();
+
         $response = $this->getHttpClient()->get(
-            'https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration'
+            "https://{$baseUrl}/access-management-1.0/access/.well-known/openid-configuration"
         );
 
         $this->localUrlCache = json_decode($response->getBody(), true);
