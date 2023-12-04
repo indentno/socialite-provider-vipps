@@ -47,6 +47,8 @@ You will need to add an entry to the services configuration file so that after c
     'client_id' => env('VIPPS_CLIENT_ID'),
     'client_secret' => env('VIPPS_CLIENT_SECRET'),
     'redirect' => env('VIPPS_REDIRECT_URI'),
+    'base_url' => env('VIPPS_BASE_URL'), // not required, defaults to api.vipps.no
+    'additional_scopes' => [], // not required, use this to request additional data, like name and email (see https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration for additional supported scopes)
 ],
 ```
 
