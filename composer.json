@@ -1,19 +1,19 @@
 {
-    "name": "sempro/socialite-provider-vipps",
+    "name": "indentno/socialite-provider-vipps",
     "description": "Vipps OAuth2 Provider for Laravel Socialite",
     "license": "MIT",
     "authors": [{
-        "name": "Sempro AS",
-        "email": "christoffer.fredriksen@sempro.no"
+        "name": "Indent AS",
+        "email": "runar@indent.no"
     }],
     "require": {
-        "php": "^7.3",
+        "php": "^8.0",
         "ext-json": "*",
-        "socialiteproviders/manager": "^4.0"
+        "socialiteproviders/manager": "^4.4"
     },
     "autoload": {
         "psr-4": {
-            "SocialiteProviders\\Vipps\\": ""
+            "Indent\\SocialiteProviderVipps\\": ""
         }
     }
 }

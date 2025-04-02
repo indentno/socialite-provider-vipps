@@ -1,15 +1,12 @@
 <?php
 
-namespace SocialiteProviders\Vipps;
+namespace Indent\SocialiteProviderVipps;
 
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class VippsExtendSocialite
 {
-    /**
-     * Execute the provider.
-     */
-    public function handle(SocialiteWasCalled $socialiteWasCalled)
+    public function handle(SocialiteWasCalled $socialiteWasCalled): void
     {
         $socialiteWasCalled->extendSocialite('vipps', Provider::class);
     }

@@ -1,62 +1,65 @@
 # Socialite Provider for Vipps
 
+> Custom provider for using Vipps with Laravel Socialite. This package requires laravel socialite in your project.
+
 ## 1. Installation
 
 ```bash
-// This assumes that you have composer installed globally
-composer require sempro/socialite-provider-vipps
+composer require indentno/socialite-provider-vipps
 ```
 
-## 2. Service Provider
+## 2. Event Listener
 
-Add to app.php:
+### Laravel 11+
 
-``` php
-'providers' => [
-    Laravel\Socialite\SocialiteServiceProvider::class,
-    \SocialiteProviders\Manager\ServiceProvider::class,
-];
-```
-
-## 3. Event Listener
-
-* Add `SocialiteProviders\Manager\SocialiteWasCalled` event to your `listen[]` array  in `app/Providers/EventServiceProvider`.
-
-Example:
+In Laravel 11, the default `EventServiceProvider` provider was removed. Instead, add the listener using the `listen` method on the `Event` facade, in your `AppServiceProvider` `boot` method.
 
 ```php
-/**
- * The event handler mappings for the application.
- *
- * @var array
- */
+Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
+    $event->extendSocialite('vipps', \Indent\SocialiteProviderVipps\Provider::class);
+});
+```
+<details>
+<summary>
+Laravel 10 or below
+</summary>
+Configure the package's listener to listen for `SocialiteWasCalled` events.
+
+Add the event to your `listen[]` array in `app/Providers/EventServiceProvider`. See the [Base Installation Guide](https://socialiteproviders.com/usage/) for detailed instructions.
+
+```php
 protected $listen = [
     \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-        '\SocialiteProviders\Vipps\VippsExtendSocialite@handle',
+        // ... other providers
+        \Indent\SocialiteProviderVipps\VippsExtendSocialite::class . '@handle',
     ],
 ];
 ```
-## 4. Configuration setup
+</details>
 
-You will need to add an entry to the services configuration file so that after config files are cached for usage in production environment (Laravel command `artisan config:cache`) all config is still available.
-
-#### Add to `config/services.php`.
+## 3. Add configuration to `config/services.php`
 
 ```php
 'vipps' => [
     'client_id' => env('VIPPS_CLIENT_ID'),
     'client_secret' => env('VIPPS_CLIENT_SECRET'),
     'redirect' => env('VIPPS_REDIRECT_URI'),
+    
+    // Optional. Can be provided for interacting with vipps test api.
+    'base_url' => 'apitest.vipps.no',
+    
+    // Optional. Can be added in order to request more data.
+    // (See link for list of scopes: https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration)
+    'scopes' => [
+        'name',
+        'email',
+    ],
 ],
 ```
 
 Remember to whitelist the redirect_uri in the Vipps portal.
 
-## 5. Usage
-
-* [Laravel docs on configuration](http://laravel.com/docs/master/configuration)
-
-* You should now be able to use it like you would regularly use Socialite (assuming you have the facade installed):
+## 4. Usage
 
 To initiate the Vipps login, add this to your controller
 
@@ -68,7 +71,7 @@ You've now gotten a user token from Vipps in your callback function. Now we need
 use the user token to get the phone number of the authenticated user.
 
 ```php
-$user = Socialite::driver('vipps')->stateless()->user();
+$user = Socialite::driver('vipps')->user();
 ```
 
 Example for a VippsAuthController:
@@ -76,38 +79,37 @@ Example for a VippsAuthController:
 ```php
 <?php
  
- namespace App\Http\Controllers\Api;
+ namespace App\Http\Controllers;
  
  use App\Http\Controllers\Controller;
- use Illuminate\Http\Request;
+ use Illuminate\Http\RedirectResponse;
  use Laravel\Socialite\Facades\Socialite;
  
  class VippsAuthController extends Controller
  {
-     // User clicked Login in with Vipps button
-     public function index(Request $request)
+     public function redirect(): RedirectResponse
      {
          return Socialite::driver('vipps')->redirect();
      }
  
-     // Vipps callback function (VIPPS_REDIRECT_URL in .env)
-     public function handleCallback()
+     public function callback()
      {
-         $user = Socialite::driver('vipps')->stateless()->user();
+         $user = Socialite::driver('vipps')->user();
  
          if (!$user) {
-             //Return error message
+             // Return error message
          }
 
-         //Do Authentication stuff
+         // Verify user exists, authenticate and redirect
      }
 }
 ```
 
 ## Vipps guidelines
 
-* When using Vipps login you need to use the login button svgs provided by Vipps.
-Go to [Vipps design guidelines](https://github.com/vippsas/vipps-design-guidelines) for more info.
+When using Vipps login you need to use the login button svgs provided by Vipps.
+Go to [Vipps brand guidelines](https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/) for more info.
 
 ## License
-MIT © [Sempro AS](https://www.sempro.no)
+
+MIT © [Indent AS](https://www.indent.no)

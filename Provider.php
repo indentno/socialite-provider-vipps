@@ -1,53 +1,33 @@
 <?php
 
-namespace SocialiteProviders\Vipps;
+namespace Indent\SocialiteProviderVipps;
 
-use GuzzleHttp\ClientInterface;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 use SocialiteProviders\Manager\OAuth2\User;
 
 class Provider extends AbstractProvider
 {
-    /**
-     * Unique Provider Identifier.
-     */
-    const IDENTIFIER = 'VIPPS';
+    public const IDENTIFIER = 'VIPPS';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $scopes = [
         'openid',
-        'api_version_2',
         'phoneNumber',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
     protected $scopeSeparator = ' ';
 
-    private $localUrlCache = null;
+    private ?array $localUrlCache = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getAuthUrl($state)
+    protected function getAuthUrl($state): string
     {
         return $this->buildAuthUrlFromBase($this->resolveEndpointUrl('authorization_endpoint'), $state);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getTokenUrl()
     {
         return $this->resolveEndpointUrl('token_endpoint');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get($this->resolveEndpointUrl('userinfo_endpoint'), [
@@ -62,41 +42,22 @@ class Provider extends AbstractProvider
     /**
      * {@inheritdoc}
      */
-    protected function mapUserToObject(array $user)
+    protected function mapUserToObject(array $user): \Laravel\Socialite\Two\User
     {
         return (new User())->setRaw($user)->map([
             'phone_number' => $user['phone_number'],
+            'name' => $user['name'] ?? null,
+            'email' => $user['email'] ?? null,
+            'id' => $user['sub'] ?? null,
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getTokenFields($code)
+    protected function getTokenHeaders($code): array
     {
         return [
-            'grant_type' => 'authorization_code',
-            'code' => $code,
-            'redirect_uri' => $this->redirectUrl,
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret),
         ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAccessTokenResponse($code)
-    {
-        $postKey = (version_compare(ClientInterface::VERSION, '6') === 1) ? 'form_params' : 'body';
-
-        $response = $this->getHttpClient()->post($this->getTokenUrl(), [
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret),
-            ],
-            $postKey => $this->getTokenFields($code),
-        ]);
-
-        return json_decode($response->getBody(), true);
     }
 
     private function resolveEndpointUrl($endpoint)
@@ -108,12 +69,21 @@ class Provider extends AbstractProvider
         return $this->localUrlCache[$endpoint];
     }
 
-    private function buildLocalUrlCache()
+    private function buildLocalUrlCache(): void
     {
+        $baseUrl = $this->getConfig('base_url', 'api.vipps.no');
         $response = $this->getHttpClient()->get(
-            'https://api.vipps.no/access-management-1.0/access/.well-known/openid-configuration'
+            "https://$baseUrl/access-management-1.0/access/.well-known/openid-configuration",
         );
 
         $this->localUrlCache = json_decode($response->getBody(), true);
+    }
+
+    public static function additionalConfigKeys(): array
+    {
+        return [
+            'base_url',
+            'scopes',
+        ];
     }
 }
